@@ -5,7 +5,7 @@ const EARTH_RADIUS_KM = 6371
 const preferenceWeights: Record<PreferenceMode, { distance: number; info: number }> = {
   close: { distance: 0.8, info: 0.2 },
   balanced: { distance: 0.6, info: 0.4 },
-  info: { distance: 0.4, info: 0.6 },
+  info: { distance: 0.2, info: 0.8 },
 }
 
 export function toRadians(value: number) {

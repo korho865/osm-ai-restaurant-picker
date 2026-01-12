@@ -10,10 +10,10 @@ import type {
 
 const EARTH_RADIUS_KM = 6371
 
-const preferenceWeights: Record<PreferenceMode, { distance: number; cuisine: number; info: number }> = {
-  close: { distance: 0.65, cuisine: 0.2, info: 0.15 },
-  balanced: { distance: 0.45, cuisine: 0.3, info: 0.25 },
-  info: { distance: 0.3, cuisine: 0.25, info: 0.45 },
+const preferenceWeights: Record<PreferenceMode, { distance: number; info: number }> = {
+  close: { distance: 0.8, info: 0.2 },
+  balanced: { distance: 0.6, info: 0.4 },
+  info: { distance: 0.4, info: 0.6 },
 }
 
 export function toRadians(value: number) {
@@ -30,22 +30,6 @@ export function haversineDistanceKm(from: SearchCenter, to: SearchCenter) {
     Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return EARTH_RADIUS_KM * c
-}
-
-function computeCuisineScore(place: Place, keyword: string) {
-  if (!keyword.trim()) return { score: 0, reason: 'No cuisine preference set' }
-
-  const normalizedKeyword = keyword.trim().toLowerCase()
-  const tags = place.cuisine?.split(';').map((item) => item.trim().toLowerCase()) ?? []
-  if (tags.includes(normalizedKeyword)) {
-    return { score: 2, reason: `Matches cuisine tag "${normalizedKeyword}"` }
-  }
-
-  if (place.name.toLowerCase().includes(normalizedKeyword)) {
-    return { score: 1, reason: `Name mentions "${normalizedKeyword}"` }
-  }
-
-  return { score: 0, reason: 'No matching cuisine tags or name hints' }
 }
 
 function computeInfoScore(place: Place) {
@@ -74,13 +58,10 @@ export function scorePlaces(places: Place[], center: SearchCenter, prefs: Search
       const distanceScore = (1 / (1 + distanceKm)) * 5
       const distanceContribution = weights.distance * distanceScore
 
-      const cuisineResult = computeCuisineScore(place, prefs.cuisineKeyword)
-      const cuisineContribution = weights.cuisine * cuisineResult.score
-
       const infoResult = computeInfoScore(place)
       const infoContribution = weights.info * infoResult.score
 
-      const totalScore = distanceContribution + cuisineContribution + infoContribution
+      const totalScore = distanceContribution + infoContribution
 
       const breakdown: ScoreBreakdownRow[] = [
         {
@@ -90,14 +71,6 @@ export function scorePlaces(places: Place[], center: SearchCenter, prefs: Search
         },
       ]
 
-      if (cuisineResult.score > 0) {
-        breakdown.push({
-          label: 'Cuisine match',
-          value: Number(cuisineContribution.toFixed(2)),
-          reason: cuisineResult.reason,
-        })
-      }
-
       infoResult.rows.forEach((row) => {
         breakdown.push({
           label: row.label,
@@ -105,14 +78,6 @@ export function scorePlaces(places: Place[], center: SearchCenter, prefs: Search
           reason: `${row.label} (+${row.value.toFixed(2)} raw info score)`,
         })
       })
-
-      if (cuisineResult.score === 0) {
-        breakdown.push({
-          label: 'Cuisine',
-          value: 0,
-          reason: cuisineResult.reason,
-        })
-      }
 
       if (infoResult.rows.length === 0) {
         breakdown.push({

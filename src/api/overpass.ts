@@ -1,7 +1,13 @@
 import type { AmenityType, Place, SearchCenter } from '../domain/place'
 import { buildAmenityFilter } from '../domain/scoring'
 
-const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter'
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.openstreetmap.ru/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+]
+
+const RETRY_DELAYS_MS = [0, 400, 900]
 
 type OverpassElement = {
   id: number
@@ -56,15 +62,10 @@ out body;
 out center;`
 }
 
-export async function fetchPlacesFromOverpass(params: {
-  center: SearchCenter
-  radius: number
-  types: AmenityType[]
-}) {
-  const query = buildQuery(params.center, params.radius, params.types)
-  const body = new URLSearchParams({ data: query })
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-  const response = await fetch(OVERPASS_ENDPOINT, {
+async function requestOverpass(endpoint: string, body: string) {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -74,10 +75,38 @@ export async function fetchPlacesFromOverpass(params: {
   })
 
   if (!response.ok) {
-    throw new Error(`Overpass request failed (${response.status})`)
+    throw new Error(`status ${response.status}`)
   }
 
-  const data: OverpassResponse = await response.json()
+  return (await response.json()) as OverpassResponse
+}
+
+export async function fetchPlacesFromOverpass(params: {
+  center: SearchCenter
+  radius: number
+  types: AmenityType[]
+}) {
+  const query = buildQuery(params.center, params.radius, params.types)
+  const payload = new URLSearchParams({ data: query }).toString()
+  const errors: string[] = []
+
+  for (let attempt = 0; attempt < OVERPASS_ENDPOINTS.length; attempt += 1) {
+    const endpoint = OVERPASS_ENDPOINTS[attempt]
+    try {
+      if (RETRY_DELAYS_MS[attempt]) {
+        await sleep(RETRY_DELAYS_MS[attempt])
+      }
+      const data = await requestOverpass(endpoint, payload)
+      return normalizeResponse(data)
+    } catch (error) {
+      errors.push(`${new URL(endpoint).host}: ${error instanceof Error ? error.message : 'unknown error'}`)
+    }
+  }
+
+  throw new Error(`Overpass request failed (${errors.join(' | ')})`)
+}
+
+function normalizeResponse(data: OverpassResponse) {
   const places: Place[] = []
   const seen = new Set<string>()
 

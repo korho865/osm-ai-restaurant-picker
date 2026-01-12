@@ -13,7 +13,6 @@ const DEFAULT_CENTER: SearchCenter = { lat: 52.3728, lon: 4.8936 }
 const DEFAULT_PREFS: SearchPreferences = {
   radius: 1500,
   types: ['restaurant', 'cafe', 'fast_food'],
-  cuisineKeyword: '',
   preferenceMode: 'balanced',
 }
 

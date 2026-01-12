@@ -132,17 +132,6 @@ export function Controls({
       </div>
 
       <div>
-        <label className="field-label">Cuisine keyword (optional)</label>
-        <input
-          className="text"
-          placeholder="ramen, vegan, tapas..."
-          value={preferences.cuisineKeyword}
-          onChange={(event) => setPreferences({ cuisineKeyword: event.target.value })}
-        />
-        <p className="subtle">Matches against both `cuisine` tags and the place name.</p>
-      </div>
-
-      <div>
         <label className="field-label">Preference mode</label>
         <div className="segments">
           {(Object.keys(preferenceLabels) as PreferenceMode[]).map((mode) => (

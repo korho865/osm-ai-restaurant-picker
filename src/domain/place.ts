@@ -10,7 +10,6 @@ export type SearchCenter = {
 export type SearchPreferences = {
   radius: number
   types: AmenityType[]
-  cuisineKeyword: string
   preferenceMode: PreferenceMode
 }
 

@@ -2,17 +2,18 @@ import { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import type { ScoredPlace, SearchCenter } from '../domain/place'
 import { formatFoodType } from '../domain/food'
 
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-})
+function createPlaceIcon(active: boolean) {
+  return L.divIcon({
+    className: `place-marker${active ? ' place-marker--active' : ''}`,
+      html: '<span class="place-marker__dot"></span>',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -18],
+  })
+}
 
 type MapViewProps = {
   center: SearchCenter
@@ -63,6 +64,7 @@ export function MapView({ center, radius, places, selectedId, onSelect, onCenter
             key={place.id}
             position={[place.lat, place.lon]}
             eventHandlers={{ click: () => onSelect(place.id) }}
+            icon={createPlaceIcon(place.id === selectedId)}
           >
             <Popup>
               <strong>{place.name}</strong>

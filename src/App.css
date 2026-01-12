@@ -60,6 +60,27 @@
   min-height: 720px;
 }
 
+.place-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.place-marker__dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  border: 2px solid #fff;
+  box-shadow: 0 6px 16px rgba(16, 24, 40, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.place-marker--active .place-marker__dot {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 4px rgba(255, 98, 48, 0.25), 0 10px 24px rgba(16, 24, 40, 0.35);
+}
+
 .panel {
   display: flex;
   flex-direction: column;

@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import type { AmenityType, PreferenceMode, SearchCenter, SearchPreferences } from '../domain/place'
+import type { PreferenceMode, SearchCenter, SearchPreferences } from '../domain/place'
 import type { AppStatus } from '../domain/place'
+import {
+  FOOD_CATEGORIES,
+  EAT_AND_DRINK_CATEGORY_ID,
+  BUY_FOOD_CATEGORY_ID,
+  getAmenityOptionsForGroups,
+  getShopOptionsForGroups,
+} from '../domain/food'
 
 const preferenceLabels: Record<PreferenceMode, string> = {
   close: 'Prefer close',
@@ -19,12 +26,6 @@ type ControlsProps = {
   onLocateMe: () => Promise<void> | void
   onGeocode: (query: string) => Promise<string | null>
 }
-
-const typeOptions: { label: string; value: AmenityType }[] = [
-  { label: 'Restaurant', value: 'restaurant' },
-  { label: 'Cafe', value: 'cafe' },
-  { label: 'Fast food', value: 'fast_food' },
-]
 
 export function Controls({
   center,
@@ -44,11 +45,40 @@ export function Controls({
     onPreferencesChange({ ...preferences, ...patch })
   }
 
-  const toggleType = (type: AmenityType) => {
-    const hasType = preferences.types.includes(type)
-    if (hasType && preferences.types.length === 1) return
-    const nextTypes = hasType ? preferences.types.filter((t) => t !== type) : [...preferences.types, type]
-    setPreferences({ types: nextTypes })
+  const toggleCategory = (categoryId: string) => {
+    const hasCategory = preferences.groupIds.includes(categoryId)
+    if (hasCategory && preferences.groupIds.length === 1) return
+    const nextGroups = hasCategory
+      ? preferences.groupIds.filter((id) => id !== categoryId)
+      : [...preferences.groupIds, categoryId]
+    const keepAmenitySelection = nextGroups.includes(EAT_AND_DRINK_CATEGORY_ID)
+    const keepShopSelection = nextGroups.includes(BUY_FOOD_CATEGORY_ID)
+    setPreferences({
+      groupIds: nextGroups,
+      selectedAmenityTypes: keepAmenitySelection ? preferences.selectedAmenityTypes : [],
+      selectedShopTypes: keepShopSelection ? preferences.selectedShopTypes : [],
+    })
+  }
+
+  const amenityOptions = getAmenityOptionsForGroups(preferences.groupIds)
+  const amenitySelectionEnabled = amenityOptions.length > 0
+  const shopOptions = getShopOptionsForGroups(preferences.groupIds)
+  const shopSelectionEnabled = shopOptions.length > 0
+
+  const toggleAmenity = (value: string) => {
+    const hasValue = preferences.selectedAmenityTypes.includes(value)
+    const nextValues = hasValue
+      ? preferences.selectedAmenityTypes.filter((item) => item !== value)
+      : [...preferences.selectedAmenityTypes, value]
+    setPreferences({ selectedAmenityTypes: nextValues })
+  }
+
+  const toggleShop = (value: string) => {
+    const hasValue = preferences.selectedShopTypes.includes(value)
+    const nextValues = hasValue
+      ? preferences.selectedShopTypes.filter((item) => item !== value)
+      : [...preferences.selectedShopTypes, value]
+    setPreferences({ selectedShopTypes: nextValues })
   }
 
   const handleGeocode = async (event: FormEvent) => {
@@ -116,20 +146,101 @@ export function Controls({
       </div>
 
       <div>
-        <label className="field-label">Place types</label>
-        <div className="chips">
-          {typeOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              className={`chip ${preferences.types.includes(option.value) ? 'chip--active' : ''}`}
-              onClick={() => toggleType(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
+        <label className="field-label">Food categories</label>
+        <div className="category-grid">
+          {FOOD_CATEGORIES.map((category) => {
+            const selected = preferences.groupIds.includes(category.id)
+            const tags = category.filters.flatMap((filter) => filter.values)
+            const preview = tags.slice(0, 4).join(', ')
+            return (
+              <button
+                key={category.id}
+                type="button"
+                className={`category-card ${selected ? 'category-card--active' : ''}`}
+                onClick={() => toggleCategory(category.id)}
+              >
+                <div className="category-card__header">
+                  <span>{category.label}</span>
+                  <span className="category-card__badge">{selected ? 'Selected' : 'Tap to include'}</span>
+                </div>
+                <p className="subtle">{category.description}</p>
+                <p className="category-card__tags subtle">
+                  {preview}
+                  {tags.length > 4 ? '…' : ''}
+                </p>
+              </button>
+            )
+          })}
         </div>
       </div>
+
+      {amenitySelectionEnabled && (
+        <div>
+          <label className="field-label">Amenity focus (optional)</label>
+          <div className="amenity-chips">
+            {amenityOptions.map((value) => {
+              const active = preferences.selectedAmenityTypes.includes(value)
+              const label = value.replace(/_/g, ' ')
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  className={`amenity-chip ${active ? 'amenity-chip--active' : ''}`}
+                  onClick={() => toggleAmenity(value)}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          <p className="subtle">
+            Narrow the search to specific amenity types. Leave all unchecked to include every eat & drink place.
+          </p>
+          {preferences.selectedAmenityTypes.length > 0 && (
+            <button
+              type="button"
+              className="ghost ghost--inline"
+              onClick={() => setPreferences({ selectedAmenityTypes: [] })}
+            >
+              Clear amenity focus
+            </button>
+          )}
+        </div>
+      )}
+
+      {shopSelectionEnabled && (
+        <div>
+          <label className="field-label">Shop focus (optional)</label>
+          <div className="amenity-chips">
+            {shopOptions.map((value) => {
+              const active = preferences.selectedShopTypes.includes(value)
+              const label = value.replace(/_/g, ' ')
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  className={`amenity-chip ${active ? 'amenity-chip--active' : ''}`}
+                  onClick={() => toggleShop(value)}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          <p className="subtle">
+            Focus the search on specialty food shops. Leave all unchecked to include every food retailer.
+          </p>
+          {preferences.selectedShopTypes.length > 0 && (
+            <button
+              type="button"
+              className="ghost ghost--inline"
+              onClick={() => setPreferences({ selectedShopTypes: [] })}
+            >
+              Clear shop focus
+            </button>
+          )}
+        </div>
+      )}
 
       <div>
         <label className="field-label">Preference mode</label>

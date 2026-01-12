@@ -1,5 +1,5 @@
-import type { AmenityType, Place, SearchCenter } from '../domain/place'
-import { buildAmenityFilter } from '../domain/scoring'
+import type { Place, SearchCenter } from '../domain/place'
+import { getFiltersForCategories, resolveAmenitySelection, resolveShopSelection } from '../domain/food'
 
 const OVERPASS_ENDPOINTS = [
   'https://overpass-api.de/api/interpreter',
@@ -11,6 +11,7 @@ const RETRY_DELAYS_MS = [0, 400, 900]
 
 type OverpassElement = {
   id: number
+  type?: 'node' | 'way' | 'relation'
   lat?: number
   lon?: number
   center?: { lat: number; lon: number }
@@ -33,13 +34,19 @@ function normalizePlace(element: OverpassElement): Place | null {
 
   const location = element.center ?? (element.lat && element.lon ? { lat: element.lat, lon: element.lon } : null)
   if (!location) return null
+  const kind = element.tags.amenity ? 'amenity' : element.tags.shop ? 'shop' : null
+  if (!kind) return null
+
+  const typeValue = element.tags[kind]
+  if (!typeValue) return null
 
   return {
-    id: `${element.id}`,
+    id: `${element.type ?? 'node'}-${element.id}`,
     name: element.tags.name ?? 'Unnamed place',
     lat: location.lat,
     lon: location.lon,
-    amenity: element.tags.amenity ?? 'poi',
+    kind,
+    type: typeValue,
     tags: element.tags,
     cuisine: element.tags.cuisine ?? null,
     opening_hours: element.tags.opening_hours ?? null,
@@ -49,13 +56,45 @@ function normalizePlace(element: OverpassElement): Place | null {
   }
 }
 
-function buildQuery(center: SearchCenter, radius: number, types: AmenityType[]) {
-  const amenities = buildAmenityFilter(types).join('|')
+function buildQuery(
+  center: SearchCenter,
+  radius: number,
+  groupIds: string[],
+  amenityOverrides: string[],
+  shopOverrides: string[],
+) {
+  const { amenity, shop } = getFiltersForCategories(groupIds)
+  if (!amenity.length && !shop.length) {
+    throw new Error('No food categories selected')
+  }
+
+  const queryParts: string[] = []
+
+  const amenityList = amenity.length ? resolveAmenitySelection(amenityOverrides, amenity) : []
+  const shopList = shop.length ? resolveShopSelection(shopOverrides, shop) : []
+
+  if (amenityList.length) {
+    const list = amenityList.join('|')
+    queryParts.push(
+      `  node["amenity"~"^(${list})$"](around:${radius},${center.lat},${center.lon});`,
+      `  way["amenity"~"^(${list})$"](around:${radius},${center.lat},${center.lon});`,
+    )
+  }
+
+  if (shopList.length) {
+    const list = shopList.join('|')
+    queryParts.push(
+      `  node["shop"~"^(${list})$"](around:${radius},${center.lat},${center.lon});`,
+      `  way["shop"~"^(${list})$"](around:${radius},${center.lat},${center.lon});`,
+    )
+  }
+
+  const joined = queryParts.join('\n')
+
   return `
 [out:json][timeout:25];
 (
-  node["amenity"~"^(${amenities})$"](around:${radius},${center.lat},${center.lon});
-  way["amenity"~"^(${amenities})$"](around:${radius},${center.lat},${center.lon});
+${joined}
 );
 out body;
 >;
@@ -84,9 +123,11 @@ async function requestOverpass(endpoint: string, body: string) {
 export async function fetchPlacesFromOverpass(params: {
   center: SearchCenter
   radius: number
-  types: AmenityType[]
+  groupIds: string[]
+  amenityTypes: string[]
+  shopTypes: string[]
 }) {
-  const query = buildQuery(params.center, params.radius, params.types)
+  const query = buildQuery(params.center, params.radius, params.groupIds, params.amenityTypes, params.shopTypes)
   const payload = new URLSearchParams({ data: query }).toString()
   const errors: string[] = []
 

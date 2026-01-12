@@ -1,4 +1,5 @@
 import type { AppStatus, ScoredPlace } from '../domain/place'
+import { formatFoodType } from '../domain/food'
 
 type ResultsListProps = {
   results: ScoredPlace[]
@@ -46,7 +47,7 @@ export function ResultsList({ results, status, error, onSelect, selectedId }: Re
             >
               <p className="result-rank">#{index + 1}</p>
               <h3>{place.name}</h3>
-              <p className="result-amenity">{place.amenity}</p>
+              <p className="result-amenity">{formatFoodType(place.kind, place.type)}</p>
               <p className="result-meta">
                 <span>{place.distanceKm.toFixed(2)} km</span>
                 <span>Score {place.score}</span>

@@ -1,6 +1,6 @@
-export type AmenityType = 'restaurant' | 'cafe' | 'fast_food'
-
 export type PreferenceMode = 'close' | 'balanced' | 'info'
+
+export type FoodKind = 'amenity' | 'shop'
 
 export type SearchCenter = {
   lat: number
@@ -9,7 +9,9 @@ export type SearchCenter = {
 
 export type SearchPreferences = {
   radius: number
-  types: AmenityType[]
+  groupIds: string[]
+  selectedAmenityTypes: string[]
+  selectedShopTypes: string[]
   preferenceMode: PreferenceMode
 }
 
@@ -18,7 +20,8 @@ export type Place = {
   name: string
   lat: number
   lon: number
-  amenity: string
+  kind: FoodKind
+  type: string
   tags: Record<string, string>
   cuisine: string | null
   opening_hours: string | null

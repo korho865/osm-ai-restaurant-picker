@@ -6,6 +6,7 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import type { ScoredPlace, SearchCenter } from '../domain/place'
+import { formatFoodType } from '../domain/food'
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -65,6 +66,7 @@ export function MapView({ center, radius, places, selectedId, onSelect, onCenter
           >
             <Popup>
               <strong>{place.name}</strong>
+              <div>{formatFoodType(place.kind, place.type)}</div>
               <div>{place.distanceKm.toFixed(2)} km away</div>
               <div>Score: {place.score}</div>
             </Popup>

@@ -7,12 +7,15 @@ import { PlaceDetails } from './ui/PlaceDetails'
 import { fetchPlacesFromOverpass } from './api/overpass'
 import { geocodeAddress } from './api/nominatim'
 import { scorePlaces } from './domain/scoring'
+import { DEFAULT_FOOD_CATEGORY_IDS } from './domain/food'
 import type { AppStatus, ScoredPlace, SearchCenter, SearchPreferences } from './domain/place'
 
 const DEFAULT_CENTER: SearchCenter = { lat: 52.3728, lon: 4.8936 }
 const DEFAULT_PREFS: SearchPreferences = {
   radius: 1500,
-  types: ['restaurant', 'cafe', 'fast_food'],
+  groupIds: [...DEFAULT_FOOD_CATEGORY_IDS],
+  selectedAmenityTypes: [],
+  selectedShopTypes: [],
   preferenceMode: 'balanced',
 }
 
@@ -49,7 +52,9 @@ function App() {
       const raw = await fetchPlacesFromOverpass({
         center,
         radius: preferences.radius,
-        types: preferences.types,
+        groupIds: preferences.groupIds,
+        amenityTypes: preferences.selectedAmenityTypes,
+        shopTypes: preferences.selectedShopTypes,
       })
       if (!raw.length) {
         clearResults()

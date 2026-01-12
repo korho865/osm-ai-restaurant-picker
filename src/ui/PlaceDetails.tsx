@@ -1,4 +1,5 @@
 import type { ScoredPlace } from '../domain/place'
+import { formatFoodType } from '../domain/food'
 
 type PlaceDetailsProps = {
   place: ScoredPlace | null
@@ -35,9 +36,9 @@ export function PlaceDetails({ place }: PlaceDetailsProps) {
 
       <div className="details__meta">
         <p>
-          <span className="subtle">Amenity</span>
+          <span className="subtle">Category</span>
           <br />
-          {place.amenity}
+          {formatFoodType(place.kind, place.type)}
         </p>
         {place.address && (
           <p>

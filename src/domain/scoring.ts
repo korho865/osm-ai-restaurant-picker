@@ -1,12 +1,4 @@
-import type {
-  AmenityType,
-  Place,
-  PreferenceMode,
-  ScoreBreakdownRow,
-  ScoredPlace,
-  SearchCenter,
-  SearchPreferences,
-} from './place'
+import type { Place, PreferenceMode, ScoreBreakdownRow, ScoredPlace, SearchCenter, SearchPreferences } from './place'
 
 const EARTH_RADIUS_KM = 6371
 
@@ -95,8 +87,4 @@ export function scorePlaces(places: Place[], center: SearchCenter, prefs: Search
       }
     })
     .sort((a, b) => b.score - a.score)
-}
-
-export function buildAmenityFilter(types: AmenityType[]) {
-  return types.length ? types : ['restaurant', 'cafe', 'fast_food']
 }

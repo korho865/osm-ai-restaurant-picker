@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import './App.css'
 import { Controls } from './ui/Controls'
 import { MapView } from './ui/MapView'
@@ -121,8 +121,7 @@ function App() {
           <p className="eyebrow">OSM AI Restaurant Picker</p>
           <h1>Pick a vibe, let transparent AI do the sorting</h1>
           <p className="lede">
-            Click anywhere in Amsterdam (or use your location), tune the scoring weights, and the rule-based
-            explanation engine will rank nearby restaurants, cafes, and fast-food spots using OpenStreetMap data.
+            Click anywhere in Amsterdam (or use your location), tune the scoring weights, and the rule-based explanation engine will rank nearby restaurants, cafes, and fast-food spots using OpenStreetMap data.
           </p>
         </div>
         <div className="hero__badge">Built with Overpass + Leaflet</div>
@@ -163,9 +162,8 @@ function App() {
       </div>
 
       <footer className="score-note">
-        <p>We rank places using a simple, explainable score based on distance, how well the place matches your keyword (like “pizza” or “vegan”), and a small bonus for being well-documented in OpenStreetMap (such as having opening hours, a website, or a cuisine tag). 
-          You can switch between Prefer close, Balanced, and Prefer info-rich to change how much each factor matters. 
-          For every result, you can open “Why this place?” to see the exact score breakdown.
+        <p>
+          We rank places using a simple, explainable score based on distance, how well a place matches your selected groups, and a small bonus for being well-documented in OpenStreetMap (opening hours, website, cuisine tags, etc.). Switch between Prefer close, Balanced, and Prefer info-rich to adjust the weights, and open "Why this place?" to see the exact breakdown.
         </p>
       </footer>
     </div>

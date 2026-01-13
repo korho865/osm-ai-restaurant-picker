@@ -161,6 +161,13 @@ function App() {
           <PlaceDetails place={placeForDetails} />
         </div>
       </div>
+
+      <footer className="score-note">
+        <p>
+          Scores blend distance (closer gets more points), map details (opening hours, website, tags), and how well a place
+          matches the groups or filters you selected. Tweak the sliders to change the weightings.
+        </p>
+      </footer>
     </div>
   )
 }

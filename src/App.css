@@ -70,15 +70,16 @@
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  background: linear-gradient(135deg, #ffb47f, var(--accent));
   border: 2px solid #fff;
   box-shadow: 0 6px 16px rgba(16, 24, 40, 0.25);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .place-marker--active .place-marker__dot {
-  transform: scale(1.15);
-  box-shadow: 0 0 0 4px rgba(255, 98, 48, 0.25), 0 10px 24px rgba(16, 24, 40, 0.35);
+  transform: scale(1.2);
+  background: linear-gradient(135deg, #0f172a, #1d2942);
+  box-shadow: 0 0 0 5px rgba(16, 24, 40, 0.25), 0 14px 28px rgba(16, 24, 40, 0.4);
 }
 
 .panel {
@@ -288,11 +289,25 @@
   text-align: left;
   background: #fff;
   cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, background 0.2s ease,
+    color 0.2s ease;
 }
 
 .result-card--active {
-  border-color: var(--accent);
-  box-shadow: 0 10px 20px rgba(255, 140, 82, 0.2);
+  border-color: #0f172a;
+  background: linear-gradient(135deg, #0f172a, #1f2a40);
+  color: #fff;
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.45);
+  transform: translateY(-2px);
+}
+
+.result-card--active .result-rank,
+.result-card--active .result-amenity {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.result-card--active .result-meta span {
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .result-rank {

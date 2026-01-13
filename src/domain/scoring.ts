@@ -4,7 +4,7 @@ const EARTH_RADIUS_KM = 6371
 
 const preferenceWeights: Record<PreferenceMode, { distance: number; info: number }> = {
   close: { distance: 0.8, info: 0.2 },
-  balanced: { distance: 0.6, info: 0.4 },
+  balanced: { distance: 0.5, info: 0.5 },
   info: { distance: 0.2, info: 0.8 },
 }
 
@@ -30,11 +30,11 @@ function computeInfoScore(place: Place) {
     infoRows.push({ label, value, reason: label })
   }
 
-  if (place.opening_hours) addRow('Has opening hours', 0.4)
+  if (place.opening_hours) addRow('Has opening hours', 0.5)
   if (place.website) addRow('Has website', 0.3)
   if (place.phone) addRow('Has phone number', 0.2)
   if (place.cuisine) addRow('Has cuisine tag', 0.1)
-  if (place.address) addRow('Has address info', 0.1)
+  if (place.address) addRow('Has address info', 0.3)
 
   const infoScore = infoRows.reduce((sum, row) => sum + row.value, 0)
   return { score: infoScore, rows: infoRows }

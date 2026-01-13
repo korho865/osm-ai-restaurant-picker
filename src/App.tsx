@@ -163,9 +163,9 @@ function App() {
       </div>
 
       <footer className="score-note">
-        <p>
-          Scores blend distance (closer gets more points), map details (opening hours, website, tags), and how well a place
-          matches the groups or filters you selected. Tweak the sliders to change the weightings.
+        <p>We rank places using a simple, explainable score based on distance, how well the place matches your keyword (like “pizza” or “vegan”), and a small bonus for being well-documented in OpenStreetMap (such as having opening hours, a website, or a cuisine tag). 
+          You can switch between Prefer close, Balanced, and Prefer info-rich to change how much each factor matters. 
+          For every result, you can open “Why this place?” to see the exact score breakdown.
         </p>
       </footer>
     </div>

@@ -25,7 +25,7 @@ export function ResultsList({ results, status, error, onSelect, selectedId }: Re
     <section className="results">
       <header className="results__header">
         <div>
-          <p className="eyebrow">AI picks</p>
+          <p className="eyebrow">Top picks</p>
           {showList ? (
             <h2>Top {Math.min(results.length, 15)} picks near you</h2>
           ) : (
